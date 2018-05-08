@@ -54,10 +54,6 @@ Tractor::Tractor()
     auto velocity_converter = builder.AddSystem<FrameVelocityConverter>();
     builder.Connect(simple_tractor->velocity_output(), velocity_converter->simple_car_state_input());
     builder.ExportOutput(velocity_converter->simple_car_state_output());
-    // Visual output
-    auto state_converter = builder.AddSystem<VisualStateConverter>();
-    builder.Connect(simple_tractor->state_output(), state_converter->simple_car_state_input());
-    builder.ExportOutput(state_converter->visual_state_output());
     builder.BuildInto(this);
 }
 
@@ -74,9 +70,4 @@ const OutputPort<double>& Tractor::state_output() const
 const OutputPort<double>& Tractor::velocity_output() const
 {
     return this->get_output_port(1);
-}
-
-const OutputPort<double>& Tractor::visual_output() const
-{
-    return this->get_output_port(2);
 }

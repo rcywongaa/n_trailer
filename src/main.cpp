@@ -12,18 +12,18 @@
 #include <drake/lcm/drake_lcm.h>
 
 #include "meta.hpp"
-#include "Tractor.hpp"
+#include "TrailerSystem.hpp"
 #include "CarController.hpp"
 
 void simulate(){
     drake::systems::DiagramBuilder<double> builder;
-    auto plant = builder.AddSystem<Tractor>();
+    auto plant = builder.AddSystem<TrailerSystem>(0, 1.0);
     auto controller = builder.AddSystem(std::make_unique<CarController>());
     builder.Connect(plant->state_output(), controller->state_input());
     builder.Connect(controller->driving_command_output(), plant->driving_command_input());
 
     auto visualizer_tree = std::make_unique<RigidBodyTree<double>>();
-    drake::parsers::sdf::AddModelInstancesFromSdfFile(getSrcDir() + "../trailer.sdf", drake::multibody::joints::kFixed, nullptr, visualizer_tree.get());
+    drake::parsers::sdf::AddModelInstancesFromSdfFile(getSrcDir() + "../0_trailer.sdf", drake::multibody::joints::kFixed, nullptr, visualizer_tree.get());
     auto visualizer_plant = builder.AddSystem<drake::systems::RigidBodyPlant<double>>(std::move(visualizer_tree));
     builder.Connect(plant->visual_output(), visualizer_plant->get_input_port(0));
 

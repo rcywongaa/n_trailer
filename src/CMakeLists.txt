@@ -1,6 +1,8 @@
 set(SRC
     CarController.cpp
     Tractor.cpp
+    Trailer.cpp
+    TrailerSystem.cpp
     main.cpp
 )
 
