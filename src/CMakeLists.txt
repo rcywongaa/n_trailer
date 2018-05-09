@@ -3,6 +3,7 @@ set(SRC
     Tractor.cpp
     Trailer.cpp
     TrailerSystem.cpp
+    SimpleCarStateToPose.cpp
     main.cpp
 )
 

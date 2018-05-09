@@ -16,9 +16,12 @@ class TrailerSystem : public drake::systems::Diagram<double>
         const drake::systems::OutputPort<double>& state_output() const;
         const drake::systems::OutputPort<double>& velocity_output() const;
         // Intended for visualization only
-        const drake::systems::OutputPort<double>& visual_output() const;
+        const drake::systems::OutputPort<double>& pose_output(int idx) const;
     private:
         int num_trailers;
         Tractor* tractor;
         std::vector<Trailer*> trailers;
+        int state_output_idx;
+        int velocity_output_idx;
+        std::vector<int> pose_output_indices;
 };

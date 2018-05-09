@@ -1,20 +1,33 @@
 #include "Trailer.hpp"
 
 #include <cmath>
-
-#include "VisualStateConverter.hpp"
+#include <iostream>
 
 using namespace drake::systems;
 using namespace drake::automotive;
 
-Trailer::Trailer(double length) :
+Trailer::Trailer(double length, const SimpleCarState<double>& initial_state) :
     preceding_state_idx(this->DeclareVectorInputPort(SimpleCarState<double>()).get_index()),
     preceding_velocity_idx(this->DeclareVectorInputPort(SimpleCarState<double>()).get_index()),
     state_idx(this->DeclareVectorOutputPort(SimpleCarState<double>(), &Trailer::set_output_state).get_index()),
     velocity_idx(this->DeclareVectorOutputPort(SimpleCarState<double>(), &Trailer::calc_velocity).get_index())
 {
     this->DeclareContinuousState(SimpleCarState<double>());
+    this->initial_state.set_x(initial_state.x());
+    this->initial_state.set_y(initial_state.y());
+    this->initial_state.set_heading(initial_state.heading());
+    this->initial_state.set_velocity(initial_state.velocity());
     this->length = length;
+}
+
+void Trailer::SetDefaultState(const Context<double>&, State<double>* state) const
+{
+    SimpleCarState<double>& mutable_state = dynamic_cast<SimpleCarState<double>&>(state->get_mutable_continuous_state().get_mutable_vector());
+    mutable_state.set_x(initial_state.x());
+    mutable_state.set_y(initial_state.y());
+    mutable_state.set_heading(initial_state.heading());
+    mutable_state.set_velocity(initial_state.velocity());
+    std::cout << "SetDefaultState(" << mutable_state << ")" << std::endl;
 }
 
 void Trailer::DoCalcTimeDerivatives(const Context<double>& context, ContinuousState<double>* derivatives) const
@@ -61,10 +74,10 @@ void Trailer::calc_velocity(const Context<double>& context, SimpleCarState<doubl
 {
     const SimpleCarState<double>& state = get_state(context);
     const SimpleCarState<double>* const preceding_state = this->EvalVectorInput<SimpleCarState>(context, this->preceding_state_idx);
-    const SimpleCarState<double>* const preceding_velocity = this->EvalVectorInput<SimpleCarState>(context, this->preceding_velocity_idx);
+    //const SimpleCarState<double>* const preceding_velocity = this->EvalVectorInput<SimpleCarState>(context, this->preceding_velocity_idx);
     double joint_angle = state.heading() - preceding_state->heading();
-    velocity->set_velocity(preceding_velocity->velocity() * std::cos(joint_angle));
+    velocity->set_velocity(preceding_state->velocity() * std::cos(joint_angle));
     velocity->set_x(velocity->velocity() * std::cos(state.heading()));
     velocity->set_y(velocity->velocity() * std::sin(state.heading()));
-    velocity->set_heading(velocity->velocity() * std::sin(joint_angle) / length);
+    velocity->set_heading(-velocity->velocity() * std::sin(joint_angle) / length);
 }

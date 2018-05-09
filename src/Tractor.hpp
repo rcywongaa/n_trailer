@@ -4,8 +4,6 @@
 #include "drake/automotive/gen/simple_car_state.h"
 #include <drake/systems/framework/diagram.h>
 
-#include "VisualState.hpp"
-
 class Tractor : public drake::systems::Diagram<double>
 {
     public:

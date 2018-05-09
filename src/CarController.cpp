@@ -27,6 +27,6 @@ void CarController::create_driving_command(const Context<double>& context, Drivi
     DRAKE_ASSERT(state != nullptr);
     std::cout << "State: " << *state << std::endl;
 
-    output->set_steering_angle(0.0);
-    output->set_acceleration(10);
+    output->set_steering_angle(0.5);
+    output->set_acceleration(0.5);
 }

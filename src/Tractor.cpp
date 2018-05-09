@@ -5,8 +5,6 @@
 #include <drake/systems/framework/diagram_builder.h>
 #include <drake/systems/rendering/frame_velocity.h>
 
-#include "VisualStateConverter.hpp"
-
 using namespace drake::systems;
 using namespace drake::automotive;
 
@@ -49,7 +47,7 @@ Tractor::Tractor()
     // Driving Command input
     builder.ExportInput(simple_tractor->get_input_port(0));
     // State output
-    builder.ExportOutput(simple_tractor->get_output_port(0));
+    builder.ExportOutput(simple_tractor->state_output());
     // Velocity output
     auto velocity_converter = builder.AddSystem<FrameVelocityConverter>();
     builder.Connect(simple_tractor->velocity_output(), velocity_converter->simple_car_state_input());
