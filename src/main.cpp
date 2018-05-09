@@ -22,8 +22,8 @@
 #include "TrailerSystem.hpp"
 #include "CarController.hpp"
 
-const int NUM_TRAILERS = 1;
-const int TRAILER_LENGTH = 5;
+const int NUM_TRAILERS = 2;
+const int TRAILER_LENGTH = 2;
 
 void simulate(){
     drake::systems::DiagramBuilder<double> builder;
@@ -38,11 +38,11 @@ void simulate(){
     for (int id = 0; id < NUM_TRAILERS+1; id++)
     {
         std::string name;
-        if (id == 0) name = "Tractor";
-        else name = "Trailer" + std::to_string(id);
+        if (id == 0) name = "tractor";
+        else name = "trailer" + std::to_string(id);
         const drake::systems::InputPortDescriptor<double>& ports = aggregator->AddSingleInput(name, id);
         builder.Connect(plant->pose_output(id), ports);
-        car_vis_applicator->AddCarVis(std::make_unique<drake::automotive::PriusVis<double>>(id, name));
+        car_vis_applicator->AddCarVis(std::make_unique<drake::automotive::BoxCarVis<double>>(id, name));
     }
     builder.Connect(aggregator->get_output_port(0), car_vis_applicator->get_car_poses_input_port());
     // Convert pose outputs to draw messages
@@ -67,7 +67,7 @@ void simulate(){
     drake::systems::Simulator<double> simulator(*diagram);
     simulator.set_target_realtime_rate(1.0);
     simulator.Initialize();
-    simulator.StepTo(5);
+    simulator.StepTo(10);
 
 }
 

@@ -25,7 +25,6 @@ void CarController::create_driving_command(const Context<double>& context, Drivi
 {
     const SimpleCarState<double>* const state = this->EvalVectorInput<SimpleCarState>(context, state_input_idx);
     DRAKE_ASSERT(state != nullptr);
-    std::cout << "State: " << *state << std::endl;
 
     output->set_steering_angle(0.5);
     output->set_acceleration(0.5);

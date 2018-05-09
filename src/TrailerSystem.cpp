@@ -1,5 +1,7 @@
 #include "TrailerSystem.hpp"
 
+#include <string>
+
 #include <drake/systems/framework/diagram_builder.h>
 #include <drake/systems/primitives/multiplexer.h>
 #include <drake/systems/primitives/demultiplexer.h>
@@ -17,26 +19,29 @@ TrailerSystem::TrailerSystem(int num_trailers, double trailer_length) :
     DiagramBuilder<double> builder;
 
     const OutputPort<double>* preceding_state_output;
-    const OutputPort<double>* preceding_velocity_output;
+    const OutputPort<double>* preceding_state_d_output;
+    std::string name;
     for (int i = 0; i < num_trailers+1; i++)
     {
         if (i == 0)
         {
             tractor = builder.AddSystem<Tractor>();
+            tractor->set_name("tractor");
             builder.ExportInput(tractor->driving_command_input());
             preceding_state_output = &(tractor->state_output());
-            preceding_velocity_output = &(tractor->velocity_output());
+            preceding_state_d_output = &(tractor->state_d_output());
         }
         else
         {
             SimpleCarState<double> initial_position;
             initial_position.set_x(-trailer_length * i);
             Trailer* trailer = builder.AddSystem<Trailer>(trailer_length, initial_position);
+            trailer->set_name("trailer" + std::to_string(i));
             builder.Connect(*preceding_state_output, trailer->preceding_state_input());
-            builder.Connect(*preceding_velocity_output, trailer->preceding_velocity_input());
+            builder.Connect(*preceding_state_d_output, trailer->preceding_state_d_input());
             trailers.push_back(trailer);
             preceding_state_output = &(trailer->state_output());
-            preceding_velocity_output = &(trailer->velocity_output());
+            preceding_state_d_output = &(trailer->state_d_output());
         }
 
         SimpleCarStateToPose* converter = builder.AddSystem<SimpleCarStateToPose>();
@@ -46,8 +51,8 @@ TrailerSystem::TrailerSystem(int num_trailers, double trailer_length) :
     }
     //Rear state output
     state_output_idx = builder.ExportOutput(*preceding_state_output);
-    //Rear velocity output
-    velocity_output_idx = builder.ExportOutput(*preceding_velocity_output);
+    //Rear state_d output
+    state_d_output_idx = builder.ExportOutput(*preceding_state_d_output);
     // Visual output
     builder.BuildInto(this);
 }
@@ -62,9 +67,9 @@ const OutputPort<double>& TrailerSystem::state_output() const
     return this->get_output_port(state_output_idx);
 }
 
-const OutputPort<double>& TrailerSystem::velocity_output() const
+const OutputPort<double>& TrailerSystem::state_d_output() const
 {
-    return this->get_output_port(velocity_output_idx);
+    return this->get_output_port(state_d_output_idx);
 }
 
 const OutputPort<double>& TrailerSystem::pose_output(int idx) const
