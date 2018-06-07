@@ -21,8 +21,8 @@ class Trailer : public drake::systems::LeafSystem<double>
         const drake::automotive::SimpleCarState<double>* const get_preceding_state(const drake::systems::Context<double>& context) const;
         double get_linear_velocity(const drake::systems::Context<double>& context) const;
         double get_joint_angle(const drake::systems::Context<double>& context) const;
-        void set_next_state(const drake::systems::Context<double>& context, drake::automotive::SimpleCarState<double>* state) const;
-        void set_next_state_d(const drake::systems::Context<double>& context, drake::automotive::SimpleCarState<double>* state) const;
+        void get_output_state(const drake::systems::Context<double>& context, drake::automotive::SimpleCarState<double>* state) const;
+        void get_output_state_d(const drake::systems::Context<double>& context, drake::automotive::SimpleCarState<double>* state) const;
 
         double length;
         drake::automotive::SimpleCarState<double> initial_state;

@@ -9,8 +9,8 @@ using namespace drake::automotive;
 Trailer::Trailer(double length, const SimpleCarState<double>& initial_state) :
     preceding_state_idx(this->DeclareVectorInputPort(SimpleCarState<double>()).get_index()),
     preceding_state_d_idx(this->DeclareVectorInputPort(SimpleCarState<double>()).get_index()),
-    state_idx(this->DeclareVectorOutputPort(SimpleCarState<double>(), &Trailer::set_next_state).get_index()),
-    state_d_idx(this->DeclareVectorOutputPort(SimpleCarState<double>(), &Trailer::set_next_state_d).get_index())
+    state_idx(this->DeclareVectorOutputPort(SimpleCarState<double>(), &Trailer::get_output_state).get_index()),
+    state_d_idx(this->DeclareVectorOutputPort(SimpleCarState<double>(), &Trailer::get_output_state_d).get_index())
 {
     this->DeclareContinuousState(SimpleCarState<double>());
     this->initial_state.set_x(initial_state.x());
@@ -33,7 +33,7 @@ void Trailer::SetDefaultState(const Context<double>&, State<double>* state) cons
 void Trailer::DoCalcTimeDerivatives(const Context<double>& context, ContinuousState<double>* derivatives) const
 {
     SimpleCarState<double>& state_d = dynamic_cast<SimpleCarState<double>&>(derivatives->get_mutable_vector());
-    set_next_state_d(context, &state_d);
+    get_output_state_d(context, &state_d);
 }
 
 const InputPortDescriptor<double>& Trailer::preceding_state_input() const
@@ -80,7 +80,7 @@ double Trailer::get_joint_angle(const Context<double>& context) const
     return state.heading() - preceding_state->heading();
 }
 
-void Trailer::set_next_state(const Context<double>& context, SimpleCarState<double>* state) const
+void Trailer::get_output_state(const Context<double>& context, SimpleCarState<double>* state) const
 {
     const SimpleCarState<double>& current_state = get_state(context);
     const SimpleCarState<double>* const preceding_state = this->EvalVectorInput<SimpleCarState>(context, this->preceding_state_idx);
@@ -90,7 +90,7 @@ void Trailer::set_next_state(const Context<double>& context, SimpleCarState<doub
     state->set_velocity(get_linear_velocity(context));
 }
 
-void Trailer::set_next_state_d(const Context<double>& context, SimpleCarState<double>* state_d) const
+void Trailer::get_output_state_d(const Context<double>& context, SimpleCarState<double>* state_d) const
 {
     const SimpleCarState<double>& state = get_state(context);
     const SimpleCarState<double>* const preceding_state = get_preceding_state(context);
