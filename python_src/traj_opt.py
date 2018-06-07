@@ -8,7 +8,7 @@ def AddEqualityConstraint(mp, expression1, expression2, slack = 0.001):
     mp.AddConstraint(expression1 - expression2 <= slack)
     mp.AddConstraint(expression1 - expression2 >= -slack)
 
-def compute_trajectory(num_trailers, x_func, y_func, T, dt, max_steer_angle = np.pi/6, trailer_length = 1.0, slack = 0.001):
+def compute_trajectory(num_trailers, x_func, y_func, N, dt, max_steer_angle = np.pi/6, trailer_length = 1.0, slack = 0.001):
     '''
     Given a parametric curve defined by x_func(n) and y_func(n) where x_func(n) must be strictly increasing,
     Find the trajectory of the n-trailer system that minimizes the deviation of each trailer from the defined curve.
@@ -16,32 +16,35 @@ def compute_trajectory(num_trailers, x_func, y_func, T, dt, max_steer_angle = np
     :param num_trailers: int, number of trailers in this n-trailer system
     :param x_func, y_func: function, parametric curve defined by x_func(n) and y_func(n)
         x_func must be strictly increasing
-    :param T: float, terminal position is defined by x_func(0), y_func(0) and x_func(T), y_func(T)
+    :param N: float, number of time steps to take
+        Termianl position is defined by x_func(N*dt), y_func(N*dt)
     :param dt: float, integration time step
     '''
 
-    N = int(np.ceil(T/dt))
+    num_vehicles = num_trailers + 1
     mp = MathematicalProgram()
 
     # Control variable for offset between successive trailers
     c = mp.NewContinuousVariables(1, "c")
-    mp.AddConstraint(c[0] >= slack)
+    mp.AddConstraint(c[0] >= 0.0)
     mp.AddConstraint(c[0] <= trailer_length)
+    # c = [1.0]
     # Control variable for starting offset
     lag = mp.NewContinuousVariables(1, "lag")
-    mp.AddConstraint(lag[0] >= slack)
+    mp.AddConstraint(lag[0] >= 0.0)
+    # lag = [0.0]
 
     # x[t][i] is the x position of the i-th (0 is the tractor) trailer at time t
     # Desired values
-    x_desired_over_time = np.array([[x_func(t*dt - lag[0] - i*c[0]) for i in range(num_trailers+1)] for t in range(N+1)])
-    y_desired_over_time = np.array([[y_func(t*dt - lag[0] - i*c[0]) for i in range(num_trailers+1)] for t in range(N+1)])
+    x_desired_over_time = np.array([[x_func(t*dt - lag[0] - i*c[0]) for i in range(num_vehicles)] for t in range(N+1)])
+    y_desired_over_time = np.array([[y_func(t*dt - lag[0] - i*c[0]) for i in range(num_vehicles)] for t in range(N+1)])
     # Control variables
-    x_over_time = mp.NewContinuousVariables(N+1, num_trailers+1, "x")
-    x_d_over_time = mp.NewContinuousVariables(N+1, num_trailers+1, "x_d")
-    y_over_time = mp.NewContinuousVariables(N+1, num_trailers+1, "y")
-    y_d_over_time = mp.NewContinuousVariables(N+1, num_trailers+1, "y_d")
-    theta_over_time = mp.NewContinuousVariables(N+1, num_trailers+1, "theta")
-    theta_d_over_time = mp.NewContinuousVariables(N+1, num_trailers+1, "theta_d")
+    x_over_time = mp.NewContinuousVariables(N+1, num_vehicles, "x")
+    x_d_over_time = mp.NewContinuousVariables(N+1, num_vehicles, "x_d")
+    y_over_time = mp.NewContinuousVariables(N+1, num_vehicles, "y")
+    y_d_over_time = mp.NewContinuousVariables(N+1, num_vehicles, "y_d")
+    theta_over_time = mp.NewContinuousVariables(N+1, num_vehicles, "theta")
+    theta_d_over_time = mp.NewContinuousVariables(N+1, num_vehicles, "theta_d")
     assert(x_desired_over_time.shape == x_over_time.shape)
     assert(y_desired_over_time.shape == y_over_time.shape)
 
@@ -50,7 +53,7 @@ def compute_trajectory(num_trailers, x_func, y_func, T, dt, max_steer_angle = np
     mp.AddQuadraticCost(x_error_sq + y_error_sq)
 
     # Initialize x[0] and y[0]
-    for i in range(num_trailers+1):
+    for i in range(num_vehicles):
         AddEqualityConstraint(mp, x_over_time[0][i], 0 - i*trailer_length, slack)
         AddEqualityConstraint(mp, y_over_time[0][i], 0, slack)
         AddEqualityConstraint(mp, x_d_over_time[0][i], 0, slack)
@@ -59,7 +62,7 @@ def compute_trajectory(num_trailers, x_func, y_func, T, dt, max_steer_angle = np
         AddEqualityConstraint(mp, theta_d_over_time[0][i], 0, slack)
 
     for t in range(1, N+1):
-        for i in range(num_trailers+1):
+        for i in range(num_vehicles):
             # State update
             AddEqualityConstraint(mp, x_over_time[t][i], x_over_time[t-1][i] + x_d_over_time[t-1][i]*dt, slack)
             AddEqualityConstraint(mp, y_over_time[t][i], y_over_time[t-1][i] + y_d_over_time[t-1][i]*dt, slack)
@@ -70,10 +73,10 @@ def compute_trajectory(num_trailers, x_func, y_func, T, dt, max_steer_angle = np
             AddEqualityConstraint(mp, atan2(y_d_over_time[t][i], x_d_over_time[t][i]), theta_over_time[t][i], slack)
 
             v = sqrt(x_d_over_time[t][i]**2 + y_d_over_time[t][i]**2)
-            if i == 0:
+            if i == 0: # Tractor dynamics
                 mp.AddConstraint(theta_d_over_time[t][i] <= v * tan(max_steer_angle) / trailer_length)
                 mp.AddConstraint(theta_d_over_time[t][i] >= v * tan(-max_steer_angle) / trailer_length)
-            else:
+            else: # Trailer dynamics
                 angle_difference = theta_over_time[t][i] - theta_over_time[t][i-1]
                 preceding_v = sqrt(x_d_over_time[t][i-1]**2 + y_d_over_time[t][i-1]**2)
                 AddEqualityConstraint(mp, theta_d_over_time[t][i], -preceding_v*sin(angle_difference)/trailer_length, slack)
@@ -84,16 +87,16 @@ def compute_trajectory(num_trailers, x_func, y_func, T, dt, max_steer_angle = np
     mp.Solve()
     x_trajectory = mp.GetSolution(x_over_time)
     y_trajectory = mp.GetSolution(y_over_time)
-    print("x_trajectory shape: " + str(x_trajectory.shape))
-    print("y_trajectory shape: " + str(y_trajectory.shape))
-    # print("x0_trajectory = " + str(x_trajectory[:, 0]))
-    # print("y0_trajectory = " + str(y_trajectory[:, 0]))
+    # print("x_trajectory shape: " + str(x_trajectory.shape))
+    # print("y_trajectory shape: " + str(y_trajectory.shape))
+    print("x0_trajectory = " + str(x_trajectory[:, 0]))
+    print("y0_trajectory = " + str(y_trajectory[:, 0]))
     # print("x1_trajectory = " + str(x_trajectory[:, 1]))
     # print("y1_trajectory = " + str(y_trajectory[:, 1]))
-    c_result = mp.GetSolution(c)
-    print("c = " + str(c_result))
-    lag_result = mp.GetSolution(lag)
-    print("lag = " + str(lag_result))
+    c = mp.GetSolution(c)
+    lag = mp.GetSolution(lag)
+    print("c = " + str(c))
+    print("lag = " + str(lag))
     return x_trajectory, y_trajectory
 
 if __name__ == "__main__":
@@ -106,8 +109,8 @@ if __name__ == "__main__":
 
     dt = 0.05
     num_trailers = 2
-    T = 5
-    x_trajectory, y_trajectory = compute_trajectory(num_trailers, x_func, y_func, T, dt)
+    N = 100
+    x_trajectory, y_trajectory = compute_trajectory(num_trailers, x_func, y_func, N, dt)
     fig = plt.figure()
     ax = fig.add_subplot(111) # 111 means occupies 1/1 (all) rows, 1/1 (all) columns, with index 1
     xd = np.array([x_func(t*dt) for t in range(len(x_trajectory))])
