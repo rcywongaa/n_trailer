@@ -20,7 +20,7 @@
 
 #include "meta.hpp"
 #include "TrailerSystem.hpp"
-#include "CarController.hpp"
+#include "TractorController.hpp"
 
 const int NUM_TRAILERS = 2;
 const int TRAILER_LENGTH = 2;
@@ -28,7 +28,7 @@ const int TRAILER_LENGTH = 2;
 void simulate(){
     drake::systems::DiagramBuilder<double> builder;
     auto plant = builder.AddSystem<TrailerSystem>(NUM_TRAILERS, TRAILER_LENGTH);
-    auto controller = builder.AddSystem(std::make_unique<CarController>());
+    auto controller = builder.AddSystem(std::make_unique<TractorController>());
     builder.Connect(plant->state_output(), controller->state_input());
     builder.Connect(controller->driving_command_output(), plant->driving_command_input());
 
