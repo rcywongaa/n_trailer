@@ -43,20 +43,22 @@ SteeredTrailerSystem::SteeredTrailerSystem(int num_trailers, double trailer_leng
             builder.Connect(*preceding_state_d_output, trailer->preceding_state_d_input());
             trailers.push_back(trailer);
             SteeredTrailerController* controller = builder.AddSystem<SteeredTrailerController>();
-            builder.Connect(*preceding_state_output, controller->tractor_state_input());
-            builder.Connect(controller->link_velocity_output(), trailer->link_velocity_input());
+            controller->set_name("trailer_controller" + std::to_string(i));
+            builder.Connect(trailer->full_state_output(), controller->full_state_input());
+            builder.Connect(*preceding_state_output, controller->preceding_state_input());
+            builder.Connect(controller->link_extension_velocity_output(), trailer->link_extension_velocity_input());
             builder.Connect(controller->steer_angle_output(), trailer->steer_angle_input());
             trailer_controllers.push_back(controller);
             preceding_state_output = &(trailer->state_output());
             preceding_state_d_output = &(trailer->state_d_output());
         }
 
+        // Pose output for visualization
         SimpleCarStateToPose* converter = builder.AddSystem<SimpleCarStateToPose>();
         builder.Connect(*preceding_state_output, converter->simple_car_state_input());
         int pose_output_idx = builder.ExportOutput(converter->pose_output());
         pose_output_indices.push_back(pose_output_idx);
     }
-    // Visual output
     builder.BuildInto(this);
 }
 
