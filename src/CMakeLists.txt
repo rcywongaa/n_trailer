@@ -1,8 +1,11 @@
 set(SRC
     TractorController.cpp
     Tractor.cpp
-    Trailer.cpp
-    TrailerSystem.cpp
+    #Trailer.cpp
+    #TrailerSystem.cpp
+    SteeredTrailer.cpp
+    SteeredTrailerSystem.cpp
+    SteeredTrailerController.cpp
     SimpleCarStateToPose.cpp
     main.cpp
 )

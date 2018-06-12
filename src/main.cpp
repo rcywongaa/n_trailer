@@ -6,8 +6,6 @@
 #include <drake/systems/primitives/signal_logger.h>
 #include <drake/systems/rendering/pose_aggregator.h>
 #include <drake/systems/lcm/lcm_publisher_system.h>
-#include <drake/multibody/rigid_body_tree.h>
-#include <drake/multibody/rigid_body_plant/rigid_body_plant.h>
 #include <drake/multibody/rigid_body_plant/drake_visualizer.h>
 #include <drake/multibody/parsers/sdf_parser.h>
 #include <drake/automotive/automotive_simulator.h>
@@ -19,18 +17,15 @@
 #include <drake/lcmtypes/drake/lcmt_viewer_load_robot.hpp>
 
 #include "meta.hpp"
-#include "TrailerSystem.hpp"
-#include "TractorController.hpp"
+#include "SteeredTrailerSystem.hpp"
 
-const int NUM_TRAILERS = 2;
-const int TRAILER_LENGTH = 2;
+const int NUM_TRAILERS = 1;
+const int TRAILER_LENGTH = 1;
+const int INITIAL_LINK_LENGTH = 1;
 
 void simulate(){
     drake::systems::DiagramBuilder<double> builder;
-    auto plant = builder.AddSystem<TrailerSystem>(NUM_TRAILERS, TRAILER_LENGTH);
-    auto controller = builder.AddSystem(std::make_unique<TractorController>());
-    builder.Connect(plant->state_output(), controller->state_input());
-    builder.Connect(controller->driving_command_output(), plant->driving_command_input());
+    auto system = builder.AddSystem<SteeredTrailerSystem>(NUM_TRAILERS, TRAILER_LENGTH, 1);
 
     // Collect all pose outputs
     auto aggregator = builder.AddSystem<drake::systems::rendering::PoseAggregator<double>>();
@@ -41,7 +36,7 @@ void simulate(){
         if (id == 0) name = "tractor";
         else name = "trailer" + std::to_string(id);
         const drake::systems::InputPortDescriptor<double>& ports = aggregator->AddSingleInput(name, id);
-        builder.Connect(plant->pose_output(id), ports);
+        builder.Connect(system->pose_output(id), ports);
         car_vis_applicator->AddCarVis(std::make_unique<drake::automotive::BoxCarVis<double>>(id, name));
     }
     builder.Connect(aggregator->get_output_port(0), car_vis_applicator->get_car_poses_input_port());
