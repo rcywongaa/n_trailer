@@ -13,16 +13,20 @@ SteeredTrailer::SteeredTrailer(double initial_link_length, double trailer_length
     steer_angle_idx(this->DeclareVectorInputPort(BasicVector<double>(1)).get_index()),
     state_idx(this->DeclareVectorOutputPort(SimpleCarState<double>(), &SteeredTrailer::get_output_state).get_index()),
     state_d_idx(this->DeclareVectorOutputPort(SimpleCarState<double>(), &SteeredTrailer::get_output_state_d).get_index()),
-    full_state_idx(this->DeclareVectorOutputPort(SteeredTrailerState(), &SteeredTrailer::get_output_full_state).get_index()),
+    //full_state_idx(this->DeclareVectorOutputPort(SteeredTrailerState(), &SteeredTrailer::get_output_full_state).get_index()),
+    steer_angle_output_idx(this->DeclareVectorOutputPort(BasicVector<double>(1), &SteeredTrailer::get_steer_angle).get_index()),
+    joint_angle_output_idx(this->DeclareVectorOutputPort(BasicVector<double>(1), &SteeredTrailer::get_joint_angle).get_index()),
     trailer_length(trailer_length)
 {
-    std::cout << "Trailer preceding_state_idx = " << std::to_string(preceding_state_idx) << std::endl;
-    std::cout << "Trailer preceding_state_d_idx = " << std::to_string(preceding_state_d_idx) << std::endl;
-    std::cout << "Trailer link_extension_velocity_idx = " << std::to_string(link_extension_velocity_idx) << std::endl;
-    std::cout << "Trailer steer_angle_idx = " << std::to_string(steer_angle_idx) << std::endl;
-    std::cout << "Trailer state_idx = " << std::to_string(state_idx) << std::endl;
-    std::cout << "Trailer state_d_idx = " << std::to_string(state_d_idx) << std::endl;
-    std::cout << "Trailer full_state_idx = " << std::to_string(full_state_idx) << std::endl;
+    std::cout << "Trailer preceding_state_idx input = " << std::to_string(preceding_state_idx) << std::endl;
+    std::cout << "Trailer preceding_state_d_idx input = " << std::to_string(preceding_state_d_idx) << std::endl;
+    std::cout << "Trailer link_extension_velocity_idx input = " << std::to_string(link_extension_velocity_idx) << std::endl;
+    std::cout << "Trailer steer_angle_idx input = " << std::to_string(steer_angle_idx) << std::endl;
+    std::cout << "Trailer state_idx output = " << std::to_string(state_idx) << std::endl;
+    std::cout << "Trailer state_d_idx output = " << std::to_string(state_d_idx) << std::endl;
+    std::cout << "Trailer steer_angle_output_idx output = " << std::to_string(steer_angle_output_idx) << std::endl;
+    std::cout << "Trailer joint_angle_output_idx output = " << std::to_string(joint_angle_output_idx) << std::endl;
+    //std::cout << "Trailer full_state_idx = " << std::to_string(full_state_idx) << std::endl;
     this->DeclareContinuousState(SimpleCarState<double>());
     this->initial_state.set_x(initial_state.x());
     this->initial_state.set_y(initial_state.y());
@@ -76,9 +80,19 @@ const OutputPort<double>& SteeredTrailer::state_d_output() const
     return System<double>::get_output_port(state_d_idx);
 }
 
-const OutputPort<double>& SteeredTrailer::full_state_output() const
+//const OutputPort<double>& SteeredTrailer::full_state_output() const
+//{
+    //return System<double>::get_output_port(full_state_idx);
+//}
+
+const OutputPort<double>& SteeredTrailer::steer_angle_output() const
 {
-    return System<double>::get_output_port(full_state_idx);
+    return System<double>::get_output_port(steer_angle_output_idx);
+}
+
+const OutputPort<double>& SteeredTrailer::joint_angle_output() const
+{
+    return System<double>::get_output_port(joint_angle_output_idx);
 }
 
 const SimpleCarState<double>& SteeredTrailer::get_state(const drake::systems::Context<double>& context) const
@@ -165,13 +179,23 @@ void SteeredTrailer::get_output_state_d(const Context<double>& context, SimpleCa
     state_d->set_velocity(0.0);
 }
 
-void SteeredTrailer::get_output_full_state(const Context<double>& context, SteeredTrailerState* full_state) const
+//void SteeredTrailer::get_output_full_state(const Context<double>& context, SteeredTrailerState* full_state) const
+//{
+    //const SimpleCarState<double>& simple_state = get_state(context);
+    //full_state->set_x(simple_state.x());
+    //full_state->set_y(simple_state.y());
+    //full_state->set_heading(simple_state.heading());
+    ////full_state->set_velocity(simple_state.velocity());
+    //full_state->set_steer_angle(get_steer_angle(context));
+    //full_state->set_joint_angle(get_joint_angle(context));
+//}
+
+void SteeredTrailer::get_steer_angle(const Context<double>& context, BasicVector<double>* output) const
 {
-    const SimpleCarState<double>& simple_state = get_state(context);
-    full_state->set_x(simple_state.x());
-    full_state->set_y(simple_state.y());
-    full_state->set_heading(simple_state.heading());
-    //full_state->set_velocity(simple_state.velocity());
-    full_state->set_steer_angle(get_steer_angle(context));
-    full_state->set_joint_angle(get_joint_angle(context));
+    output->get_mutable_value()(0) = get_steer_angle(context);
+}
+
+void SteeredTrailer::get_joint_angle(const Context<double>& context, BasicVector<double>* output) const
+{
+    output->get_mutable_value()(0) = get_joint_angle(context);
 }

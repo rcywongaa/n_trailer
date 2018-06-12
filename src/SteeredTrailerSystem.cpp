@@ -44,7 +44,9 @@ SteeredTrailerSystem::SteeredTrailerSystem(int num_trailers, double trailer_leng
             trailers.push_back(trailer);
             SteeredTrailerController* controller = builder.AddSystem<SteeredTrailerController>();
             controller->set_name("trailer_controller" + std::to_string(i));
-            builder.Connect(trailer->full_state_output(), controller->full_state_input());
+            //builder.Connect(trailer->full_state_output(), controller->full_state_input());
+            builder.Connect(trailer->steer_angle_output(), controller->steer_angle_input());
+            builder.Connect(trailer->joint_angle_output(), controller->joint_angle_input());
             builder.Connect(*preceding_state_output, controller->preceding_state_input());
             builder.Connect(controller->link_extension_velocity_output(), trailer->link_extension_velocity_input());
             builder.Connect(controller->steer_angle_output(), trailer->steer_angle_input());

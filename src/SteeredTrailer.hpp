@@ -20,7 +20,9 @@ class SteeredTrailer : public drake::systems::LeafSystem<double>
         const drake::systems::InputPortDescriptor<double>& steer_angle_input() const;
         const drake::systems::OutputPort<double>& state_output() const;
         const drake::systems::OutputPort<double>& state_d_output() const;
-        const drake::systems::OutputPort<double>& full_state_output() const;
+        //const drake::systems::OutputPort<double>& full_state_output() const;
+        const drake::systems::OutputPort<double>& steer_angle_output() const;
+        const drake::systems::OutputPort<double>& joint_angle_output() const;
     private:
         const drake::automotive::SimpleCarState<double>& get_state(const drake::systems::Context<double>& context) const;
         const drake::automotive::SimpleCarState<double>* const get_preceding_state(const drake::systems::Context<double>& context) const;
@@ -33,7 +35,9 @@ class SteeredTrailer : public drake::systems::LeafSystem<double>
         double get_joint_angle(const drake::systems::Context<double>& context) const;
         void get_output_state(const drake::systems::Context<double>& context, drake::automotive::SimpleCarState<double>* state) const;
         void get_output_state_d(const drake::systems::Context<double>& context, drake::automotive::SimpleCarState<double>* state) const;
-        void get_output_full_state(const drake::systems::Context<double>& context, SteeredTrailerState* state) const;
+        //void get_output_full_state(const drake::systems::Context<double>& context, SteeredTrailerState* state) const;
+        void get_steer_angle(const drake::systems::Context<double>& context, drake::systems::BasicVector<double>* output) const;
+        void get_joint_angle(const drake::systems::Context<double>& context, drake::systems::BasicVector<double>* output) const;
 
         const double trailer_length;
         drake::automotive::SimpleCarState<double> initial_state;
@@ -41,8 +45,10 @@ class SteeredTrailer : public drake::systems::LeafSystem<double>
         int preceding_state_d_idx;
         int link_extension_velocity_idx;
         int steer_angle_idx;
+        int steer_angle_output_idx;
+        int joint_angle_output_idx;
         int state_idx;
         int state_d_idx;
-        int full_state_idx;
+        //int full_state_idx;
 };
 
