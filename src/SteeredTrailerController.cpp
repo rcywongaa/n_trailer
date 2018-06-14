@@ -56,6 +56,8 @@ const OutputPort<double>& SteeredTrailerController::steer_angle_output() const
 
 optional<bool> SteeredTrailerController::DoHasDirectFeedthrough(int input_port, int output_port) const
 {
+    if (input_port == steer_angle_input_idx && output_port == link_extension_velocity_output_idx) return true;
+    if (input_port == joint_angle_input_idx && output_port == link_extension_velocity_output_idx) return true;
     return false;
 }
 
