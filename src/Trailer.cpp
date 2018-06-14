@@ -83,7 +83,6 @@ double Trailer::get_joint_angle(const Context<double>& context) const
 void Trailer::get_output_state(const Context<double>& context, SimpleCarState<double>* state) const
 {
     const SimpleCarState<double>& current_state = get_state(context);
-    const SimpleCarState<double>* const preceding_state = this->EvalVectorInput<SimpleCarState>(context, this->preceding_state_idx);
     state->set_x(current_state.x());
     state->set_y(current_state.y());
     state->set_heading(current_state.heading());

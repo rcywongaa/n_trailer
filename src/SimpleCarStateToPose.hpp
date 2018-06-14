@@ -1,7 +1,5 @@
 #pragma once
 
-#include <iostream>
-
 #include <drake/systems/framework/leaf_system.h>
 #include <drake/systems/rendering/pose_vector.h>
 #include "drake/automotive/gen/simple_car_state.h"

@@ -13,4 +13,7 @@ class Tractor : public drake::systems::Diagram<double>
         const drake::systems::OutputPort<double>& state_d_output() const;
     private:
         drake::automotive::SimpleCar<double>* simple_tractor;
+        int driving_command_idx;
+        int state_idx;
+        int state_d_idx;
 };

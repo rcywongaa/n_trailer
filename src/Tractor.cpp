@@ -5,6 +5,8 @@
 #include <drake/systems/framework/diagram_builder.h>
 #include <drake/systems/rendering/frame_velocity.h>
 
+#include <iostream>
+
 using namespace drake::systems;
 using namespace drake::automotive;
 
@@ -45,27 +47,31 @@ Tractor::Tractor()
     DiagramBuilder<double> builder;
     simple_tractor = builder.AddSystem<SimpleCar<double>>();
     // Driving Command input
-    builder.ExportInput(simple_tractor->get_input_port(0));
+    driving_command_idx = builder.ExportInput(simple_tractor->get_input_port(0));
     // State output
-    builder.ExportOutput(simple_tractor->state_output());
+    state_idx = builder.ExportOutput(simple_tractor->state_output());
     // Velocity output
     auto state_d_converter = builder.AddSystem<FrameVelocityConverter>();
     builder.Connect(simple_tractor->velocity_output(), state_d_converter->simple_car_state_input());
-    builder.ExportOutput(state_d_converter->simple_car_state_output());
+    state_d_idx = builder.ExportOutput(state_d_converter->simple_car_state_output());
     builder.BuildInto(this);
+
+    std::cout << "Tractor driving_command_idx input = " << std::to_string(driving_command_idx) << std::endl;
+    std::cout << "Tractor state_idx output = " << std::to_string(state_idx) << std::endl;
+    std::cout << "Tractor state_d_idx output = " << std::to_string(state_d_idx) << std::endl;
 }
 
 const InputPortDescriptor<double>& Tractor::driving_command_input() const
 {
-    return this->get_input_port(0);
+    return this->get_input_port(driving_command_idx);
 }
 
 const OutputPort<double>& Tractor::state_output() const
 {
-    return this->get_output_port(0);
+    return this->get_output_port(state_idx);
 }
 
 const OutputPort<double>& Tractor::state_d_output() const
 {
-    return this->get_output_port(1);
+    return this->get_output_port(state_d_idx);
 }
