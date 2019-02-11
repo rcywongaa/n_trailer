@@ -57,7 +57,7 @@ TrailerSystem::TrailerSystem(int num_trailers, double trailer_length) :
     builder.BuildInto(this);
 }
 
-const InputPortDescriptor<double>& TrailerSystem::driving_command_input() const
+const InputPort<double>& TrailerSystem::driving_command_input() const
 {
     return this->get_input_port(0);
 }

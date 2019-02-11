@@ -12,8 +12,8 @@ class Trailer : public drake::systems::LeafSystem<double>
         Trailer(double length, const drake::automotive::SimpleCarState<double>& initial_position);
         void DoCalcTimeDerivatives(const drake::systems::Context<double>& context, drake::systems::ContinuousState<double>* derivatives) const override;
         void SetDefaultState(const drake::systems::Context<double>&, drake::systems::State<double>* state) const override;
-        const drake::systems::InputPortDescriptor<double>& preceding_state_input() const;
-        const drake::systems::InputPortDescriptor<double>& preceding_state_d_input() const;
+        const drake::systems::InputPort<double>& preceding_state_input() const;
+        const drake::systems::InputPort<double>& preceding_state_d_input() const;
         const drake::systems::OutputPort<double>& state_output() const;
         const drake::systems::OutputPort<double>& state_d_output() const;
     private:

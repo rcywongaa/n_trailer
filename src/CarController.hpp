@@ -6,7 +6,7 @@ class CarController : public drake::systems::LeafSystem<double>
 {
     public:
         CarController();
-        const drake::systems::InputPortDescriptor<double>& state_input() const;
+        const drake::systems::InputPort<double>& state_input() const;
         const drake::systems::OutputPort<double>& driving_command_output() const;
     private:
         void create_driving_command(const drake::systems::Context<double>& context, drake::automotive::DrivingCommand<double>* output) const;

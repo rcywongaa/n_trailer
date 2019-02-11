@@ -11,7 +11,7 @@ CarController::CarController() :
     ;
 }               
 
-const InputPortDescriptor<double>& CarController::state_input() const
+const InputPort<double>& CarController::state_input() const
 {
     return System<double>::get_input_port(state_input_idx);
 }

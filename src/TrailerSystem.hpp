@@ -11,7 +11,7 @@ class TrailerSystem : public drake::systems::Diagram<double>
 {
     public:
         TrailerSystem(int num_trailers, double trailer_length);
-        const drake::systems::InputPortDescriptor<double>& driving_command_input() const;
+        const drake::systems::InputPort<double>& driving_command_input() const;
         // Only for rear trailer
         const drake::systems::OutputPort<double>& state_output() const;
         const drake::systems::OutputPort<double>& state_d_output() const;

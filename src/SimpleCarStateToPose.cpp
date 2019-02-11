@@ -10,7 +10,7 @@ SimpleCarStateToPose::SimpleCarStateToPose() :
     ;
 }
 
-const drake::systems::InputPortDescriptor<double>& SimpleCarStateToPose::simple_car_state_input() const
+const drake::systems::InputPort<double>& SimpleCarStateToPose::simple_car_state_input() const
 {
     return drake::systems::System<double>::get_input_port(input_idx);
 }

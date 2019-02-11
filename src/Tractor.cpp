@@ -17,7 +17,7 @@ class FrameVelocityConverter : public drake::systems::LeafSystem<double>
         {
             ;
         }
-        const drake::systems::InputPortDescriptor<double>& simple_car_state_input() const
+        const drake::systems::InputPort<double>& simple_car_state_input() const
         {
             return System<double>::get_input_port(input_idx);
         }
@@ -55,7 +55,7 @@ Tractor::Tractor()
     builder.BuildInto(this);
 }
 
-const InputPortDescriptor<double>& Tractor::driving_command_input() const
+const InputPort<double>& Tractor::driving_command_input() const
 {
     return this->get_input_port(0);
 }

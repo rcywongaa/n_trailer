@@ -36,12 +36,12 @@ void Trailer::DoCalcTimeDerivatives(const Context<double>& context, ContinuousSt
     get_output_state_d(context, &state_d);
 }
 
-const InputPortDescriptor<double>& Trailer::preceding_state_input() const
+const InputPort<double>& Trailer::preceding_state_input() const
 {
     return System<double>::get_input_port(preceding_state_idx);
 }
 
-const InputPortDescriptor<double>& Trailer::preceding_state_d_input() const
+const InputPort<double>& Trailer::preceding_state_d_input() const
 {
     return System<double>::get_input_port(preceding_state_d_idx);
 }
